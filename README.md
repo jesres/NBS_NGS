@@ -1,0 +1,3 @@
+###I wouldn't use anything in this repo. I'm just using this repo to version control scripts I'm using in various projects
+
+*\*\*\*\*Disclaimer: I strongly suggest you don't use these unless you know what you are doing. These scripts: might have hard coding that is specific to my system, might contain errors, might not follow current best practices, might inadvertently delete or alter your source files.\*\*\*\*\*
