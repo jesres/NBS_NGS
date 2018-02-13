@@ -26,32 +26,32 @@ if os.path.exists(region_count_file) or os.path.exists(bases_count_file) or os.p
     sys.exit("ERROR: output basename %s files already exist" % args.output)
 
 #for filtering on different regions
-intron = df['Region'].str.contains('intron')
-utr = df['Region'].str.contains('utr')
-cds = df['Region'].str.contains('cds')
+intron = df['Region_Name'].str.contains('intron')
+#utr = df['Region_Name'].str.contains('utr')
+cds = df['Region_Name'].str.contains('cds')
 
 #count regions per sample
-unique_regions = df.groupby('Sample').Region.nunique()
-unique_intron = df[intron].groupby('Sample').Region.nunique()
-unique_utr = df[utr].groupby('Sample').Region.nunique()
-unique_cds = df[cds].groupby('Sample').Region.nunique()
+unique_regions = df.groupby('Sample').Region_Name.nunique()
+unique_intron = df[intron].groupby('Sample').Region_Name.nunique()
+#unique_utr = df[utr].groupby('Sample').Region_Name.nunique()
+unique_cds = df[cds].groupby('Sample').Region_Name.nunique()
 
 #sum bases per sample
-bases_total = df.groupby(['Sample'])['Overlap'].sum()
-bases_intron = df[intron].groupby(['Sample'])['Overlap'].sum()
-bases_utr = df[utr].groupby(['Sample'])['Overlap'].sum()
-bases_cds = df[cds].groupby(['Sample'])['Overlap'].sum()
+bases_total = df.groupby(['Sample'])['Olap_Btw_Reg_and_Cov'].sum()
+bases_intron = df[intron].groupby(['Sample'])['Olap_Btw_Reg_and_Cov'].sum()
+#bases_utr = df[utr].groupby(['Sample'])['Olap_Btw_Reg_and_Cov'].sum()
+bases_cds = df[cds].groupby(['Sample'])['Olap_Btw_Reg_and_Cov'].sum()
 
 #count samples per region
-samples_per_region = df.groupby('Region').Sample.nunique()
+samples_per_region = df.groupby('Region_Name').Sample.nunique()
 
 #format regions per sample for output
-combine_region_count = pd.concat([unique_regions,unique_intron,unique_utr,unique_cds], axis=1)
-combine_region_count.columns = 'Total','Intron','UTR','CDS'
+combine_region_count = pd.concat([unique_regions,unique_intron,unique_cds], axis=1)
+combine_region_count.columns = 'Total','Intron','CDS'
 
 #format bases per sample for output
-combine_bases = pd.concat([bases_total,bases_intron,bases_utr,bases_cds], axis=1)
-combine_bases.columns = 'Total','Intron','UTR','CDS'
+combine_bases = pd.concat([bases_total,bases_intron,bases_cds], axis=1)
+combine_bases.columns = 'Total','Intron','CDS'
 
 #format samples per region for output
 #samples_per_region.reset_index(name='Num Samples')
@@ -62,5 +62,5 @@ combine_bases.columns = 'Total','Intron','UTR','CDS'
 combine_region_count.to_csv(region_count_file,sep='\t')
 combine_bases.to_csv(bases_count_file,sep='\t')
 samples_per_region.to_csv(sample_count_file,sep='\t')
-combine_region_count.to_html(region_count_file_html)
-combine_bases.to_html(bases_count_file_html)
+combine_region_count.to_html(region_count_file_html, bold_rows=True, index_names=False)
+combine_bases.to_html(bases_count_file_html, bold_rows=True, index_names=False)

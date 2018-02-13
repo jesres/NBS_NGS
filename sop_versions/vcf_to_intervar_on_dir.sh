@@ -13,8 +13,9 @@ for vcf in $input_dir/*.vcf.gz
 do
 	vcf_base=${vcf##*/}
 	vcf_base_no_ext=${vcf_base%%.*}
-	in_intervar="$input_dir/${vcf_base_no_ext}.avinput"
-	out_intervar="$output_dir/$vcf_base_no_ext"
+	in_intervar=${input_dir}/${vcf_base_no_ext}.avinput
+	out_intervar=${output_dir}/${vcf_base_no_ext}
+	
 	perl /media/sf_BigShare/Tools/annovar/convert2annovar.pl -includeInfo -format vcf4 --outfile $in_intervar $vcf
 	#echo $out_intervar
 	/media/sf_BigShare/Tools/Intervar_rsicko/InterVar/InterVar.py  --buildver=hg19 --input=$in_intervar --input_type=AVinput --database_intervar=/media/sf_BigShare/Tools/InterVar-0.1.7/intervardb \

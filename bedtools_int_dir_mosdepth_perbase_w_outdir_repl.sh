@@ -15,5 +15,6 @@ fi
 for sample in $input_dir/*.per-base_collapsed_repl.bed
 do
 	out=$out_dir/${sample##*/}_intersect_${target_base_no_ext}.txt
+	mkdir -p $out_dir
 	bedtools intersect -a $target_bed -b $sample -wao > $out
 done
