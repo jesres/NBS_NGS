@@ -51,6 +51,12 @@ else
   echo $main_storage_dir"/"$project_name"/work/qc/fastqc already exists. This shouldn't happen for a new project";
 fi
 
+if [ ! -d $main_storage_dir/$project_name/work/qc/bcftools-stats ]; then
+  mkdir -p $main_storage_dir/$project_name/work/qc/bcftools-stats;
+else
+  echo $main_storage_dir"/"$project_name"/work/qc/bcftools-stats already exists. This shouldn't happen for a new project";
+fi
+
 if [ ! -d $main_storage_dir/$project_name/work/qc/verifyBamID ]; then
   mkdir -p $main_storage_dir/$project_name/work/qc/verifyBamID;
 else
