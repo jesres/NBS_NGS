@@ -81,11 +81,11 @@ else
   echo $main_storage_dir"/"$project_name"/work/reference already exists. This shouldn't happen for a new project";
 fi
 
-if [ ! -d $main_storage_dir/$project_name/work/DECoN ]; then
-  mkdir -p $main_storage_dir/$project_name/work/DECoN;
-else
-  echo $main_storage_dir"/"$project_name"/work/DECoN already exists. This shouldn't happen for a new project";
-fi
+#if [ ! -d $main_storage_dir/$project_name/work/DECoN ]; then
+#  mkdir -p $main_storage_dir/$project_name/work/DECoN;
+#else
+#  echo $main_storage_dir"/"$project_name"/work/DECoN already exists. This shouldn't happen for a new project";
+#fi
 
 if [ ! -d $main_storage_dir/$project_name/final ]; then
   mkdir -p $main_storage_dir/$project_name/final;
@@ -111,8 +111,8 @@ else
   echo $main_storage_dir"/"$project_name"/final/qc/coverage already exists. This shouldn't happen for a new project";
 fi
 
-if [ ! -d $main_storage_dir/$project_name/final/DECoN ]; then
-  mkdir -p $main_storage_dir/$project_name/final/DECoN;
-else
-  echo $main_storage_dir"/"$project_name"/final/DECoN already exists. This shouldn't happen for a new project";
-fi
+#if [ ! -d $main_storage_dir/$project_name/final/DECoN ]; then
+#  mkdir -p $main_storage_dir/$project_name/final/DECoN;
+#else
+#  echo $main_storage_dir"/"$project_name"/final/DECoN already exists. This shouldn't happen for a new project";
+#fi
