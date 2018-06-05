@@ -20,6 +20,8 @@ do
 	tabix -f -p vcf ${vcf}.gz
 	
 	newFileName=${output_dir}/${sample_base_no_ext}.TSCAfilters.vcf
+	mkdir -p ${output_dir}/only_pass
+	only_pass=${output_dir}/only_pass/${sample_base_no_ext}.TSCAfilters.only_pass.vcf.gz
 	rtg vcffilter \
 	-i ${vcf}.gz -o - --include-bed $target_bed --fail="OUTSIDE_ROI" | \
 	rtg vcffilter \
@@ -33,7 +35,6 @@ do
 	"##FILTER=<ID=PASS_DEFAULT,Description=\"Does Not Fail Other Filters\">\n");} {print;}' - > $newFileName
 	bgzip -i -c $newFileName > ${newFileName}.gz
 	tabix -f -p vcf ${newFileName}.gz
-	only_pass=${newFileName}.only_pass.vcf.gz
 	##output only pass variants in another vcf
 	bcftools view -f PASS,PASS_DEFAULT -e 'FMT/ROI="OUTSIDE_ROI"' -O z -o  $only_pass ${newFileName}.gz
 	tabix -p vcf $only_pass
