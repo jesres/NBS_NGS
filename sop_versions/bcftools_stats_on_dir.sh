@@ -16,5 +16,5 @@ do
 	sample_base_no_ext=${sample_base%%.*}
 	out=${output_dir}/${sample_base_no_ext}_filtered
 	
-	bcftools stats -f PASS,PASS_QD,PASS_LOW_SB,PASS_HIGH_QUAL,PASS_DEFAULT -e 'FMT/ROI="OUTSIDE_ROI"' $vcf > $out
+	bcftools stats -f PASS,PASS_DEFAULT -e 'FMT/ROI="OUTSIDE_ROI"' $vcf > $out
 done

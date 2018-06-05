@@ -33,4 +33,8 @@ do
 	"##FILTER=<ID=PASS_DEFAULT,Description=\"Does Not Fail Other Filters\">\n");} {print;}' - > $newFileName
 	bgzip -i -c $newFileName > ${newFileName}.gz
 	tabix -f -p vcf ${newFileName}.gz
+	only_pass=${newFileName}.only_pass.vcf.gz
+	##output only pass variants in another vcf
+	bcftools view -f PASS,PASS_DEFAULT -e 'FMT/ROI="OUTSIDE_ROI"' -O z -o  $only_pass ${newFileName}.gz
+	tabix -p vcf $only_pass
 done
