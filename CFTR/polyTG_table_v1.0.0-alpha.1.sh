@@ -5,7 +5,7 @@
 # Bash hook example
 # Example UI Args: -j ${JOB_ID} -d ${JOB_DIR} -o ${HOOK_OUTPUT_DIR} ${SAMPLE_NAMES_SPACED}
 
-####polyTG_table_v2.sh
+####polyTG_table_v1.0.0-alpha.1
 ####Author: Bob Sicko robert.sicko@health.ny.gov
 ####
 ####
@@ -17,10 +17,12 @@
 ####		v1.1 - Added a borderline range instead of a hard cutoff for het/homo.
 ####			 - Added 'percent_not_our_geno' to outputs (polyTGT_percents.txt & polyTGT_calls.txt) the percentage of reads at locus that are not classified by the genotypes in this script
 ####		v2.0 - Incorporated into Archer Analysis
+####		v1.0.0-alpha.1 - renamed to follow semantic versioning. This will allow us to start with v1.0.0 on July 1st.
+####						- labeled this one alpha since I know it will be replaced by the version that contains 1T - 11T
 ####To Do:
 ####	- Transition script to awk or python to process file from memory. This will make things much faster
 ####	- Incorporate basequality in counts. Cutoff or average score for each allele bin
-####	- Possibly create a job script that loops through samples vs a sample script and job script
+
 
 set -eu
 
