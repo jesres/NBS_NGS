@@ -13,7 +13,7 @@ Overlap_info:
 		'% Our CNV'	= percentage of our CNV overlapped 
 		'% DGV CNV' = percentage of DGV CNV overlapped
 		'%Union' 	= percentage shared overlap in a union overlap calculation
-						     ------|-----|---------------------   Our CNV
+						         ------|-----|---------------------   Our CNV
 							 ----------+++++++++++++++---------   DGV2 CNV
 							 ---++++++-------------------------   DGV2 CNV(2)							 
 							 ----------XXX---------------------   Intersection
