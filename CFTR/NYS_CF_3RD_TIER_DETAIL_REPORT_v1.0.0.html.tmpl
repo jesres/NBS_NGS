@@ -1,0 +1,199 @@
+{% load bleach_tags external_sources reporting staticfiles humanize utils %}
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta name="report_type" content="job"/>
+    <meta name="name" content="NYS_CF_3RD_TIER_DETAIL_REPORT_v1.0.0"/>
+    <meta name="assay_types" content="all"/>
+    <meta name="save_to_file" content="NYS_CF_3RD_TIER_DETAIL_REPORT_v1.0.0.pdf"/>
+    <style type="text/css">
+            @page {
+                size: A4;
+                margin: 1cm;
+                @frame footer {
+                    -pdf-frame-content: footerContent;
+                    bottom: 0cm;
+                    margin-left: 6.5cm;
+                    height: 1cm;
+                }
+  
+			}
+            @font-face {
+               font-family: FontAwesome;
+               src: url(/static/archer-branding/font/font-awesome-4.7.0/fonts/fontawesome-webfont.ttf);
+            }
+
+            table.data {border: 1px solid #666666;  border-collapse:collapse; border-color:#ccc;margin-bottom:15px; word-wrap:break-word;
+              table-layout: fixed;word-break: break-all;}
+            .data td, .data th { border: 1px solid #666666; font-size:11px; line-height:13px; vertical-align:top; padding:5px; text-align:center;}
+            .data th { border: 1px solid #666666; font-size:11px; line-height:13px;  vertical-align:center;  padding:5px; text-align:center;}
+			.data td.label, .data th.label { text-align:left }
+            .data th {background:#5789c6; color:#FFF; }
+            .inner {border: 0px}
+            .inner td { border: 0px solid #666666; text-align:left;line-height:12px;padding:1px}
+
+            div {margin-bottom:30px;}
+			
+			table.vars {border: 1px solid black;  border-color:black;margin-bottom:15px; word-wrap:break-word; border-collapse:collapse;
+              table-layout: fixed;word-break: break-all;}
+			.vars td { font-size:9px; line-height:10px; vertical-align:top; padding:2px; text-align:center; font-family: monospace;}
+			.vars th { font-size:10px; line-height:11px; vertical-align:center; padding:2px; text-align:center;}
+            .vars th {background:#5789c6; color:#FFF; }
+			  
+    h4 {font-size:18px;}
+    h5 {font-size:14px;}
+    h6 {font-size:12px;}
+            table.meta_information {margin-bottom:40px;}
+            td.meta_information {font-size:10px;color: #666;text-align:left;line-height:11px}
+            label {font-weight: bold;}
+            .no_results {font-size:16px; font-style: italic;}
+            .awesome_font {font-family:FontAwesome;font-style:normal;}
+		</style>
+
+</head>
+<body>
+	{% rest_call rest_api:job_overview job_id=job_id rest_config=rest_config as job %}
+	<h1 align="center">
+		NYS CF 3RD TIER DETAIL REPORT
+		<br/><label>Job:</label> {{job.name}} [{{job.job_id}}]
+	</h1>
+    <table class="meta_information">
+		<tr>
+            <td width="80%" class="meta_information">
+                <label>Type:</label> <span>{{job.description|bleach}}</span>
+                <br/>
+                <label>Software Version:</label> <span>{{job.job_db_record.analysis_version}}</span>
+                <br/>
+                <label>Analysis Date:</label> {{ job.job_db_record.complete_time|to_datetime|date:"d-M-Y" }} {{ job.job_db_record.complete_time|to_datetime|time:"G:i" }}
+                <br/>
+                <label>Submitted By:</label> {{job.user_email}}
+                <br/>
+                <label>Report Creator:</label> {{report_creator}}
+                <br/>
+                <label>Report Date:</label> {% now "d-M-Y G:i" %}
+                <br/>
+                <label>Target Region:</label> {{job.target_region_name}}
+                {% if job.targeted_variant_name %}
+                    <br/>
+                    <label>Target Variant:</label>  {{job.targeted_variant_name}}
+                {%endif %}
+				<br/>
+				<label>Report Template:</label> <span> NYS_CF_3RD_TIER_DETAIL_REPORT_v1.0.0 </span>
+            </td>
+            <td width="20%" valign="top">
+                <img src="{% static '/images/archerdx_logo_reporting.png' %}"/>
+            </td>
+        </tr>
+    </table>
+
+	
+<!-- 3RD TIER VARIANT DETAILS TABLE -->	
+	<h4 align="center"> 3rd Tier Variant Details </h4>
+	<table class="vars" repeat="1">
+		<thead>
+			<tr>
+				<th width="16%">Sample ID</th>
+				<th width="30%">HGVSc and HGVSp</th>
+				<th width="10%">Location</th>
+				<th width="10%">Ref</th>
+				<th width="10%">Alt</th>
+				<th width="6%">Depth</th>
+				<th width="6%">AO</th>
+				<th width="6%">UAO</th>
+				<th width="6%">AF</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for job_sample in job.samples %}
+				{% rest_call rest_api:sample_overview job_id=job_id sample_id=job_sample.id rest_config=rest_config as sample %}
+				{% if sample.results.variants.reportable_variant_count > 0 %}
+					{% rest_call rest_api:variant_reportable_list job_id=job_id sample_id=job_sample.id rest_config=rest_config as variants %}
+					{% for variant in variants %}
+						<tr>
+							{% if forloop.first %}
+								<td style="font-weight:bold">{{sample.name|slice:":14"|cut:"_"}}</td>
+							{% else %}
+								<td>"</td>
+							{% endif %}
+							<td>{{variant.hgvs_c|default:'Undefined'|cut:"NM_000492.3:"|break_words:25|wordwrap:24}}
+							<br/>{{variant.hgvs_p_aa_change|default:'Undefined'|break_words:25|wordwrap:24}} </td>
+							<td>{{variant.genomic_location|cut:"chr7:"|intcomma|break_words:12}}</td>
+							<td>{{variant.reference|break_words:8}}</td>
+							<td>{{variant.variant|break_words:8}}</td>
+							<td>{{variant.depth}}</td>
+							<td>{{variant.ao}}</td>
+							<td>{{variant.uao}}</td>
+							{% if '0.7' in variant.allele_fraction or '0.8' in variant.allele_fraction or '0.9' in variant.allele_fraction or '1.' in variant.allele_fraction %}
+								<td style="background-color:yellow">{{variant.allele_fraction|floatformat:3}}</td>
+							{% else %}
+								<td>{{variant.allele_fraction|floatformat:3}}</td>
+							{% endif %}
+						</tr>
+					{% endfor %}
+				{% else %}
+					<tr>
+						<td style="font-weight:bold">{{sample.name|slice:":14"|cut:"_"}}</td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+					</tr>
+				{% endif %}
+				{% rest_call rest_api:isoform_reportable_list job_id=job_id sample_id=job_sample.id rest_config=rest_config as rep_isoforms %}
+				{% if rep_isoforms %}
+					{% for isoform in rep_isoforms %}
+						<tr>
+							{% if forloop.counter0 > 0 %}<br/>{% endif %}
+							<td>"</td>
+							<td style="font-weight:bold;text-align:center">SV</td>
+							<td colspan="7" style="text-align:left;font-size:10px">
+								<label>Deletion?: </label>{{isoform.is_dna_deletion|yesno}}
+								<br/>
+								<label>Breakpoints: </label>
+								<br/>chr7: 
+								{% for annotation in isoform.annotations %}
+									{% if forloop.counter0 > 0 %}&rarr;{% endif %}
+									{% if annotation.end_position_is_anomaly %}
+										{{annotation.end_position|intcomma}}
+									{% elif annotation.start_position_is_anomaly %}
+										{{annotation.start_position|intcomma}}
+									{% endif %}
+								{% endfor %}
+								<br/>
+								<label>Unique Start Sites:</label>{{isoform.unique_start_sites}}
+								<br/>
+								<label>Reads</label>: {{isoform.num_reads}} ({{isoform.percent_gsp2_reads|floatformat}}%)
+							</td>
+						</tr>
+					{% endfor %}
+				{% else %}
+					<tr>
+						<td>"</td>
+						<td style="font-weight:bold;text-align:right">SV</td>
+						<td colspan="7">None</td>
+					</tr>
+				{% endif %}
+			{% endfor %}
+		</tbody>
+	</table>
+	<p>
+		<br/><label>HGVSc: </label>HGVS annotation against NM_000492.3</th>
+		<br/><label>HGVSp: </label>HGVS annotation against NP_000483.3</th>
+		<br/><label>Location: </label>hg19 Location (chr7)
+		<br/><label>AO: </label>Alternate allele observation count
+		<br/><label>UAO: </label>Total AO of unique start sites
+		<br/><label>AF: </label>Allelic Fraction/Alternate allele frequency
+		
+	</p>
+	<div id="footerContent" class="section">
+            {%block page_foot%}
+               Page <pdf:pagenumber> of <pdf:pagecount>
+            {%endblock%}
+        </div>
+</body>
+</html>
+
