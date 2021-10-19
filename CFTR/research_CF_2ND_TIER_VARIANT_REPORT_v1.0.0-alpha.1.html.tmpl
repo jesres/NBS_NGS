@@ -1,0 +1,238 @@
+{% load bleach_tags external_sources reporting staticfiles humanize utils %}
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta name="report_type" content="job"/>
+    <meta name="name" content="**research_CF_2ND_TIER_VARIANT_REPORT_v1.0.0-alpha.1"/>
+    <meta name="assay_types" content="all"/>
+    <meta name="save_to_file" content="**research_CF_2ND_TIER_VARIANT_REPORT_v1.0.0-alpha.1.pdf"/>
+
+    <style type="text/css">
+            @page {
+                size: A4;
+                margin: 1cm;
+                @frame footer {
+                    -pdf-frame-content: footerContent;
+                    bottom: 0cm;
+                    margin-left: 6.5cm;
+                    height: 1cm;
+                }
+  
+			}
+			 @font-face {
+               font-family: FontAwesome;
+               src: url(/static/archer-branding/font/font-awesome-4.7.0/fonts/fontawesome-webfont.ttf);
+            }
+
+            
+
+			
+            table.data {border: 1px solid #666666;  border-collapse:collapse; border-color:#ccc;margin-bottom:15px; table-layout:fixed;}
+            .data td, .data th { border: 1px solid #666666; font-size:11px; line-height:13px; vertical-align:center; padding:3px; text-align:center; overflow-wrap: anywhere;}
+			.data td {font-family: monospace;} 
+            .data td.label, .data th.label { text-align:left }
+            .data th {background:#5789c6; color:#FFF; }
+            .inner {border: 0px}
+            .inner td { border: 0px solid #666666; text-align:left;line-height:12px;padding:1px}
+	
+            div {margin-bottom:30px;}
+    h4 {font-size:18px;}
+    h5 {font-size:14px;}
+    h6 {font-size:12px;}
+            table.meta_information {margin-bottom:40px;}
+            td.meta_information {font-size:10px;color: #666;text-align:left;line-height:11px}
+            label {font-weight: bold;}
+            .no_results {font-size:16px; font-style: italic;}
+        </style>
+
+</head>
+<body>
+	{% rest_call rest_api:job_overview job_id=job_id rest_config=rest_config as job %}
+	<h1 align="center">
+		NYS CF 2ND TIER VARIANT REPORT
+		<br/><label>Job:</label> {{job.name}} [{{job.job_id}}]
+	</h1>
+    <table class="meta_information">
+		<tr>
+            <td width="80%" class="meta_information">
+                <label>Type:</label> <span>{{job.description|bleach}}</span>
+                <br/>
+                <label>Software Version:</label> <span>{{job.job_db_record.analysis_version}}</span>
+                <br/>
+                <label>Analysis Date:</label> {{ job.job_db_record.complete_time|to_datetime|date:"d-M-Y" }} {{ job.job_db_record.complete_time|to_datetime|time:"G:i" }}
+                <br/>
+                <label>Submitted By:</label> {{job.user_email}}
+                <br/>
+                <label>Report Creator:</label> {{report_creator}}
+                <br/>
+                <label>Report Date:</label> {% now "d-M-Y G:i" %}
+                <br/>
+                <label>Target Region:</label> {{job.target_region_name}}
+                {% if job.targeted_variant_name %}
+                    <br/>
+                    <label>Target Variant:</label>  {{job.targeted_variant_name}}
+                {%endif %}
+				<br/>
+				<label>Report Template:</label> <span> NYS_CF_2ND_TIER_VARIANT_REPORT_v1.0.1 </span>
+            </td>
+            <td width="20%" valign="top">
+                <img src="{% static '/images/archerdx_logo_reporting.png' %}"/>
+            </td>
+        </tr>
+    </table>
+	<h4 align="center"> Targeted Variants Detected </h4>
+	<table class="data" repeat="1">
+		<thead>
+			<tr>
+				<th width="14%">Sample ID</th>
+				<th width="28%">c.DNA(NM_000492.3): Prot(NP_000483.3): Legacy</th>
+				<th width="12%">hg19 Location (chr7)</th>
+				<th width="11%">Ref</th>
+				<th width="11%">Alt</th>
+				<th width="6%">Depth</th>
+				<th width="6%">Alt. allele obs. count (AO)</th>
+				<th width="6%">Total AO of uniq. starts (UAO)</th>
+				<th width="6%">Alle. Frac. (AF)</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for job_sample in job.samples %}
+				{% rest_call rest_api:sample_overview job_id=job_id sample_id=job_sample.id rest_config=rest_config as sample %}
+				{% rest_call rest_api:variant_filtered_list job_id=job_id sample_id=job_sample.id rest_config=rest_config as variants %}
+				{% rest_call rest_api:sample_read_stats job_id=job_id sample_id=job_sample.id rest_config=rest_config as stats %}
+				{% if sample.results.variants.filtered_variant_count > 0 %}
+					{% for variant in variants %}
+						<tr>
+							{% for ritem in stats.read_stat_types %}
+								{% if ritem.read_type == "Unique Fragments" %}
+									{% for ritem2 in stats.total_stats %}
+										{% if ritem2.frag_type == "Average Unique Start Sites per GSP2" %}
+											{% if ritem.total_reads < 20000 or ritem2.total_reads < 30 %}
+												<td style="color:red">{{sample.name|cut:"_"}}</td>
+											{% else %}
+												<td>{{sample.name|cut:"_"}}</td>
+											{% endif %}
+										{% endif %}
+									{% endfor %}
+								{% endif %}
+							{% endfor %}
+							<td>{{variant.name|cut:"CFTR:"|break_words:27}}</td>
+							<td>{{variant.genomic_location|cut:"chr7:"|intcomma|break_words:11}}</td>
+							<td>{{variant.reference|break_words:8}}</td>
+							<td>{{variant.variant|break_words:8}}</td>
+							<td>{{variant.depth}}</td>
+							<td>{{variant.ao}}</td>
+							<td>{{variant.uao}}</td>
+							{% if '0.7' in variant.allele_fraction or '0.8' in variant.allele_fraction or '0.9' in variant.allele_fraction or '1.' in variant.allele_fraction %}
+								<td style="background-color:yellow">{{variant.allele_fraction|floatformat:3}}</td>
+							{% else %}
+								<td>{{variant.allele_fraction|floatformat:3}}</td>
+							{% endif %}
+						</tr>
+					{% endfor %}
+				{% elif stats.qc_stats %}
+					<tr>
+							{% for ritem in stats.read_stat_types %}
+								{% if ritem.read_type == "Unique Fragments" %}
+									{% for ritem2 in stats.total_stats %}
+										{% if ritem2.frag_type == "Average Unique Start Sites per GSP2" %}
+											{% if ritem.total_reads < 20000 or ritem2.total_reads < 30 %}
+												<td style="color:red">{{sample.name|cut:"_"}}</td>
+											{% else %}
+												<td style="color:grey">{{sample.name|cut:"_"}}</td>
+											{% endif %}
+										{% endif %}
+									{% endfor %}
+								{% endif %}
+							{% endfor %}
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+					</tr>
+				{% else %}
+					<tr>
+						<td style="color:red">{{sample.name|cut:"_"}}</td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+						<td style="color:grey"> None </td>
+					</tr>
+				{% endif %}
+			{% endfor %}
+		</tbody>
+	</table>
+	
+	<div> 
+		<pdf:nextpage /> 
+	</div>
+	<h4 align="center"> Targeted Variants Under 10x Depth </h4>
+	<span align="center"> NTC and samples that fail QC are omitted from table </span>
+	<table class="data" repeat="1">
+	<tr>
+		<thead>
+			<th width="14%">Sample ID</th>
+			<th width="28%">c.DNA(NM_000492.3): Prot(NP_000483.3): Legacy</th>
+			<th width="12%">hg19 Location (chr7)</th>
+			<th width="11%">Ref</th>
+			<th width="11%">Alt</th>
+			<th width="6%">Depth</th>
+			<th width="6%">Alt. allele obs. count (AO)</th>
+			<th width="6%">Total AO of uniq. starts (UAO)</th>
+			<th width="6%">Alle. Frac. (AF)</th>
+		</thead>
+	</tr>
+		
+
+		{% for job_sample in job.samples %}
+			{% rest_call rest_api:sample_overview job_id=job_id sample_id=job_sample.id rest_config=rest_config as sample %}
+			{% rest_call rest_api:variant_filtered_list job_id=job_id sample_id=job_sample.id rest_config=rest_config as variants %}
+			{% rest_call rest_api:variant_list job_id=job_id sample_id=job_sample.id rest_config=rest_config as raw_variants %}
+			{% rest_call rest_api:sample_read_stats job_id=job_id sample_id=job_sample.id rest_config=rest_config as stats %}
+			<!-- we're not putting ntc in the table -->
+			{% if not 'ntc' in sample.name|lower %}
+				<!-- we're not putting samples that fail QC in the table -->
+				{% for ritem in stats.read_stat_types %}
+					<!-- if total unique fragments is >= 20000 -->
+					{% if ritem.read_type == "Unique Fragments" and ritem.total_reads >= 20000 %}
+						{% for totals in stats.total_stats %}
+							<!-- Average Unique Start Sites per GSP2 > 30 -->
+							{% if totals.frag_type == "Average Unique Start Sites per GSP2" and totals.total_reads >= 30 %}
+								<!--now we know we aren't in a ntc sample, or a sample that failed QC, so lets look for variants under 10x -->									
+								{% for raw_variant in raw_variants %}
+									{% if raw_variant.depth < 10%}
+										<tr>
+											<td style="color:red">{{sample.name|cut:"_"}}</td>
+											<td style="color:red">{{raw_variant.name|cut:"CFTR:"|break_words:27}}</td>
+											<td style="color:red">{{raw_variant.genomic_location|cut:"chr7:"|intcomma|break_words:11}}</td>
+											<td style="color:red">{{raw_variant.reference|break_words:8}}</td>
+											<td style="color:red">{{raw_variant.variant|break_words:8}}</td>
+											<td style="color:red">{{raw_variant.depth}}</td>
+											<td style="color:red">{{raw_variant.ao}}</td>
+											<td style="color:red">{{raw_variant.uao}}</td>
+											<td style="color:red">{{raw_variant.allele_fraction|floatformat:3}}</td>
+										</tr>
+									{% endif %}
+								{% endfor %}
+							{% endif %}
+						{% endfor %}
+					{% endif %}
+				{% endfor %}
+			{% endif %}
+		{% endfor %}
+	</table>
+	<div id="footerContent" class="section">
+            {%block page_foot%}
+               Page <pdf:pagenumber> of <pdf:pagecount>
+            {%endblock%}
+        </div>
+</body>
+</html>
