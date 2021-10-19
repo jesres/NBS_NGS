@@ -1,1 +1,1 @@
-Scripts for NYS Archer CFTR assay
+Scripts/reference files for NYS Archer CFTR assay
